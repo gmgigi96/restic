@@ -1,3 +1,4 @@
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package fuse
@@ -35,18 +36,17 @@ type openFile struct {
 	cumsize []uint64
 }
 
-func newFile(ctx context.Context, root *Root, inode uint64, node *restic.Node) (fusefile *file, err error) {
+func newFile(ctx context.Context, root *Root, node *restic.Node) (fusefile *file, err error) {
 	debug.Log("create new file for %v with %d blobs", node.Name, len(node.Content))
 	return &file{
-		inode: inode,
-		root:  root,
-		node:  node,
+		root: root,
+		node: node,
 	}, nil
 }
 
 func (f *file) Attr(ctx context.Context, a *fuse.Attr) error {
 	debug.Log("Attr(%v)", f.node.Name)
-	a.Inode = f.inode
+	a.Inode = f.node.Inode
 	a.Mode = f.node.Mode
 	a.Size = f.node.Size
 	a.Blocks = (f.node.Size / blockSize) + 1

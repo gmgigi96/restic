@@ -1,3 +1,4 @@
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package fuse
@@ -14,13 +15,12 @@ import (
 var _ = fs.NodeReadlinker(&link{})
 
 type link struct {
-	root  *Root
-	node  *restic.Node
-	inode uint64
+	root *Root
+	node *restic.Node
 }
 
-func newLink(ctx context.Context, root *Root, inode uint64, node *restic.Node) (*link, error) {
-	return &link{root: root, inode: inode, node: node}, nil
+func newLink(ctx context.Context, root *Root, node *restic.Node) (*link, error) {
+	return &link{root: root, node: node}, nil
 }
 
 func (l *link) Readlink(ctx context.Context, req *fuse.ReadlinkRequest) (string, error) {
@@ -28,7 +28,7 @@ func (l *link) Readlink(ctx context.Context, req *fuse.ReadlinkRequest) (string,
 }
 
 func (l *link) Attr(ctx context.Context, a *fuse.Attr) error {
-	a.Inode = l.inode
+	a.Inode = l.node.Inode
 	a.Mode = l.node.Mode
 
 	if !l.root.cfg.OwnerIsRoot {

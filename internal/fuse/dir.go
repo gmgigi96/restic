@@ -1,3 +1,4 @@
+//go:build darwin || freebsd || linux
 // +build darwin freebsd linux
 
 package fuse
@@ -32,13 +33,12 @@ func cleanupNodeName(name string) string {
 	return filepath.Base(name)
 }
 
-func newDir(ctx context.Context, root *Root, inode, parentInode uint64, node *restic.Node) (*dir, error) {
+func newDir(ctx context.Context, root *Root, parentInode uint64, node *restic.Node) (*dir, error) {
 	debug.Log("new dir for %v (%v)", node.Name, node.Subtree)
 
 	return &dir{
 		root:        root,
 		node:        node,
-		inode:       inode,
 		parentInode: parentInode,
 	}, nil
 }
@@ -109,7 +109,7 @@ func (d *dir) open(ctx context.Context) error {
 
 func (d *dir) Attr(ctx context.Context, a *fuse.Attr) error {
 	debug.Log("Attr()")
-	a.Inode = d.inode
+	a.Inode = d.node.Inode
 	a.Mode = os.ModeDir | d.node.Mode
 
 	if !d.root.cfg.OwnerIsRoot {
@@ -194,13 +194,13 @@ func (d *dir) Lookup(ctx context.Context, name string) (fs.Node, error) {
 	}
 	switch node.Type {
 	case "dir":
-		return newDir(ctx, d.root, fs.GenerateDynamicInode(d.inode, name), d.inode, node)
+		return newDir(ctx, d.root, d.inode, node)
 	case "file":
-		return newFile(ctx, d.root, fs.GenerateDynamicInode(d.inode, name), node)
+		return newFile(ctx, d.root, node)
 	case "symlink":
-		return newLink(ctx, d.root, fs.GenerateDynamicInode(d.inode, name), node)
+		return newLink(ctx, d.root, node)
 	case "dev", "chardev", "fifo", "socket":
-		return newOther(ctx, d.root, fs.GenerateDynamicInode(d.inode, name), node)
+		return newOther(ctx, d.root, node)
 	default:
 		debug.Log("  node %v has unknown type %v", name, node.Type)
 		return nil, fuse.ENOENT
