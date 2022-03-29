@@ -10,6 +10,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/dnaeon/go-vcr v1.2.0 // indirect
 	github.com/elithrar/simple-scrypt v1.3.0
+	github.com/gdexlab/go-render v1.0.1
 	github.com/go-ole/go-ole v1.2.5
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.6

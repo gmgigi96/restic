@@ -5,8 +5,10 @@ package fuse
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
+	"github.com/gdexlab/go-render/render"
 	"github.com/restic/restic/internal/debug"
 	"github.com/restic/restic/internal/errors"
 	"github.com/restic/restic/internal/restic"
@@ -60,6 +62,7 @@ func (f *file) Attr(ctx context.Context, a *fuse.Attr) error {
 	a.Atime = f.node.AccessTime
 	a.Ctime = f.node.ChangeTime
 	a.Mtime = f.node.ModTime
+	fmt.Printf("Path: %s Inode: %d Attr: %+v Node: %s\n ", f.node.Name, f.node.Inode, a, render.AsCode(f.node))
 
 	return nil
 
