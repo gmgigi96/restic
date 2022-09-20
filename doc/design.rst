@@ -64,19 +64,21 @@ like the following:
     {
       "version": 2,
       "id": "5956a3f67a6230d4a92cefb29529f10196c7d92582ec305fd71ff6d331d6271b",
-      "chunker_polynomial": "25b468838dcb75"
+      "chunker_polynomial": "25b468838dcb75",
+      "is_hot": true
     }
 
 After decryption, restic first checks that the version field contains a
-version number that it understands, otherwise it aborts. At the moment, the
-version is expected to be 1 or 2. The list of changes in the repository
-format is contained in the section "Changes" below.
-
-The field ``id`` holds a unique ID which consists of 32 random bytes, encoded
-in hexadecimal. This uniquely identifies the repository, regardless if it is
-accessed via a remote storage backend or locally. The field
-``chunker_polynomial`` contains a parameter that is used for splitting large
-files into smaller chunks (see below).
+version number that it understands, otherwise it aborts. At the moment,
+the version is expected to be 1. The field ``id`` holds a unique ID
+which consists of 32 random bytes, encoded in hexadecimal. This uniquely
+identifies the repository, regardless if it is accessed via SFTP or
+locally. The field ``chunker_polynomial`` contains a parameter that is
+used for splitting large files into smaller chunks (see below).
+The field ``is_hot`` is optionally given for special repositories that 
+contain only hot parts (i.e. metadata) of the backup. Such a repository
+can only be used in combination with a standard repo which can then be 
+saved in some storage where reading is expensive.
 
 Repository Layout
 -----------------

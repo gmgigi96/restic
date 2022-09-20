@@ -272,8 +272,7 @@ func (r *Repository) LoadBlob(ctx context.Context, t restic.BlobType, id restic.
 		if r.idx.IsMixedPack(blob.PackID) {
 			bt = restic.InvalidBlob
 		}
-		h := restic.Handle{Type: restic.PackFile,
-			Name: blob.PackID.String(), ContainedBlobType: bt}
+		h := restic.Handle{Type: restic.PackFile, Name: blob.PackID.String(), BT: bt}
 
 		switch {
 		case cap(buf) < int(blob.Length):
@@ -761,6 +760,15 @@ func (r *Repository) init(ctx context.Context, password string, cfg restic.Confi
 	return restic.SaveConfig(ctx, r, cfg)
 }
 
+// InitFrom initializes a repo using key and config from another repo.
+func (r *Repository) InitFrom(r2 *Repository) {
+	r.key = r2.key
+	r.dataPM.key = r2.key
+	r.treePM.key = r2.key
+	r.keyName = r2.keyName
+	r.cfg = r2.cfg
+}
+
 // Key returns the current master key.
 func (r *Repository) Key() *crypto.Key {
 	return r.key
@@ -870,7 +878,7 @@ func StreamPack(ctx context.Context, beLoad BackendLoadFn, key *crypto.Key, pack
 }
 
 func streamPackPart(ctx context.Context, beLoad BackendLoadFn, key *crypto.Key, packID restic.ID, blobs []restic.Blob, handleBlobFn func(blob restic.BlobHandle, buf []byte, err error) error) error {
-	h := restic.Handle{Type: restic.PackFile, Name: packID.String(), ContainedBlobType: restic.DataBlob}
+	h := restic.Handle{Type: restic.PackFile, Name: packID.String(), BT: restic.DataBlob}
 
 	dataStart := blobs[0].Offset
 	dataEnd := blobs[len(blobs)-1].Offset + blobs[len(blobs)-1].Length

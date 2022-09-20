@@ -47,6 +47,8 @@ type Index struct {
 	byType     [restic.NumBlobTypes]indexMap
 	packs      restic.IDs
 	mixedPacks restic.IDSet
+	// only used by Store, StorePacks does not check for already saved packIDs
+	packIDToIndex map[restic.ID]int
 
 	final      bool       // set to true for all indexes read from the backend ("finalized")
 	ids        restic.IDs // set to the IDs of the contained finalized indexes
@@ -57,8 +59,9 @@ type Index struct {
 // NewIndex returns a new index.
 func NewIndex() *Index {
 	return &Index{
-		mixedPacks: restic.NewIDSet(),
-		created:    time.Now(),
+		packIDToIndex: make(map[restic.ID]int),
+		mixedPacks:    restic.NewIDSet(),
+		created:       time.Now(),
 	}
 }
 
