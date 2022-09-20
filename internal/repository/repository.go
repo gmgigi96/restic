@@ -761,12 +761,14 @@ func (r *Repository) init(ctx context.Context, password string, cfg restic.Confi
 }
 
 // InitFrom initializes a repo using key and config from another repo.
-func (r *Repository) InitFrom(r2 *Repository) {
-	r.key = r2.key
-	r.dataPM.key = r2.key
-	r.treePM.key = r2.key
-	r.keyName = r2.keyName
-	r.cfg = r2.cfg
+func (r *Repository) InitFrom(ctx context.Context, from *Repository, newConfig *restic.Config) error {
+	r.key = from.key
+	r.keyName = from.keyName
+	cfg := from.cfg
+	if newConfig != nil {
+		cfg = *newConfig
+	}
+	return restic.SaveConfig(ctx, r, cfg)
 }
 
 // Key returns the current master key.

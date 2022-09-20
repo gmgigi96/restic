@@ -137,35 +137,3 @@ func (be *HotColdBackend) IsNotExist(err error) bool {
 func (be *HotColdBackend) Location() string {
 	return fmt.Sprintf("hot: %v cold: %v", be.hot.Location(), be.cold.Location())
 }
-
-func CheckSameFiles(ctx context.Context, be1 restic.Backend, be2 restic.Backend, t restic.FileType) (bool, error) {
-	files1 := make(map[string]int64)
-	err := be1.List(ctx, t, func(fi restic.FileInfo) error {
-		files1[fi.Name] = fi.Size
-		return nil
-	})
-	if err != nil {
-		return false, err
-	}
-
-	files2 := make(map[string]int64)
-	err = be2.List(ctx, t, func(fi restic.FileInfo) error {
-		files2[fi.Name] = fi.Size
-		return nil
-	})
-	if err != nil {
-		return false, err
-	}
-
-	if len(files1) != len(files2) {
-		return false, nil
-	}
-
-	for file, size := range files1 {
-		size2, ok := files2[file]
-		if !ok || size2 != size {
-			return false, nil
-		}
-	}
-	return true, nil
-}

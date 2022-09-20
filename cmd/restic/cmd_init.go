@@ -37,6 +37,7 @@ type InitOptions struct {
 	CopyChunkerParameters bool
 	RepositoryVersion     string
 	HotOnly               bool
+	Clone                 bool
 }
 
 var initOptions InitOptions
@@ -47,6 +48,7 @@ func init() {
 	f := cmdInit.Flags()
 	initSecondaryRepoOptions(f, &initOptions.secondaryRepoOptions, "secondary", "to copy chunker parameters from")
 	f.BoolVar(&initOptions.CopyChunkerParameters, "copy-chunker-params", false, "copy chunker parameters from the secondary repository (useful with the copy command)")
+	f.BoolVar(&initOptions.Clone, "clone", false, "TODO")
 	f.StringVar(&initOptions.RepositoryVersion, "repository-version", "stable", "repository format version to use, allowed values are a format version, 'latest' and 'stable'")
 	f.BoolVar(&initOptions.HotOnly, "hot-only", false, "initialize hot repo from existing repo (if --repo-hot is given)")
 }
@@ -129,16 +131,11 @@ func runInit(opts InitOptions, gopts GlobalOptions, args []string) error {
 		if err != nil {
 			return err
 		}
-		sHot.InitFrom(s)
 		cfgHot := s.Config()
 		cfgHot.IsHot = true
-		err = beHot.Remove(gopts.ctx, restic.Handle{Type: restic.ConfigFile})
+		err = sHot.InitFrom(gopts.ctx, s, &cfgHot)
 		if err != nil {
-			return errors.Fatalf("modifying config files in hot repository part at %s failed: %v\n", location.StripPassword(gopts.RepoHot), err)
-		}
-		err = restic.SaveConfig(gopts.ctx, sHot, cfgHot)
-		if err != nil {
-			return errors.Fatalf("initializing hot repository part at %s failed: %v\n", location.StripPassword(gopts.RepoHot), err)
+			return err
 		}
 		Verbosef("created restic hot repository part at %s\n", location.StripPassword(gopts.RepoHot))
 	}
@@ -203,9 +200,14 @@ func runInitHotOnly(gopts GlobalOptions) error {
 	if err != nil {
 		return err
 	}
-	sHot.InitFrom(repo)
 	cfgHot := repo.Config()
 	cfgHot.IsHot = true
+
+	err = sHot.InitFrom(gopts.ctx, repo, &cfgHot)
+	if err != nil {
+		return err
+	}
+
 	err = restic.SaveConfig(gopts.ctx, sHot, cfgHot)
 	if err != nil {
 		return errors.Fatalf("initializing hot repository part at %s failed: %v\n", location.StripPassword(gopts.RepoHot), err)

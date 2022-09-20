@@ -468,14 +468,6 @@ func OpenRepository(opts GlobalOptions) (*repository.Repository, error) {
 			// TODO
 		})
 
-		// Check if hot and cold repositories match by testing if all key files match
-		match, err := backend.CheckSameFiles(opts.ctx, beHot, be, restic.KeyFile)
-		if err != nil {
-			return nil, err
-		}
-		if !match {
-			return nil, errors.Fatal("hot and cold repositories do not match")
-		}
 		be = backend.NewHotColdBackend(beHot, be)
 	}
 
@@ -525,12 +517,16 @@ func OpenRepository(opts GlobalOptions) (*repository.Repository, error) {
 		}
 	}
 
-	if s.Config().IsHot && opts.RepoHot == "" {
-		return nil, errors.Fatal("repository is the hot part of a repo and cannot be used on its own")
-	}
+	// if s.Config().IsHot && opts.RepoHot == "" {
+	// 	return nil, errors.Fatal("repository is the hot part of a repo and cannot be used on its own")
+	// }
+
+	// if opts.RepoHot != "" && !s.Config().IsHot {
+	// 	return nil, errors.Fatalf("repository %s is not a hot part of a repo", location.StripPassword(opts.RepoHot))
+	// }
 
 	if opts.RepoHot != "" && !s.Config().IsHot {
-		return nil, errors.Fatalf("repository %s is not a hot part of a repo", location.StripPassword(opts.RepoHot))
+		return nil, errors.Fatalf("repository %s is not the hot part of repo", location.StripPassword(opts.RepoHot))
 	}
 
 	if opts.NoCache {
