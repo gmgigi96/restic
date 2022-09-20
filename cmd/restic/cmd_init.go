@@ -121,7 +121,11 @@ func runInit(opts InitOptions, gopts GlobalOptions, args []string) error {
 
 	Verbosef("created restic repository %v at %s\n", s.Config().ID[:10], location.StripPassword(gopts.Repo))
 	if gopts.RepoHot != "" {
-		sHot, err := repository.New(beHot, repository.Options{})
+		sHot, err := repository.New(beHot, repository.Options{
+			// TODO: need discussion + make some tests
+			Compression: repository.CompressionOff,
+			PackSize:    gopts.PackSize * 1024 * 1024,
+		})
 		if err != nil {
 			return err
 		}
