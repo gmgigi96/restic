@@ -251,21 +251,25 @@ func runInitHotOnly(gopts GlobalOptions) error {
 }
 
 func copyBackendFile(ctx context.Context, fromBe, toBe restic.Backend, h restic.Handle) error {
-	return nil // TODO
-	// file, id, _, err := repository.DownloadAndHash(ctx, fromBe, h)
-	// if err != nil {
-	// 	return nil
-	// }
-	// defer os.Remove(file.Name())
-	// defer file.Close()
+	buf, err := backend.LoadAll(ctx, nil, fromBe, h)
+	if err != nil {
+		return err
+	}
 
-	// if h.Name != id.String() {
-	// 	return errors.Errorf("hash does not match id: want %v, got %v", h.Name, id.String())
-	// }
+	hash := restic.Hash(buf)
+	ok, err := hash.EqualString(h.Name)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		Warnf("Warning: hash of data does not match ID, want\n  %v\ngot:\n  %v\n", h.Name, hash.String())
+		return errors.New("hash of data does not match")
+	}
 
-	// rd, err := restic.NewFileReader(file)
-	// if err != nil {
-	// 	return err
-	// }
-	// return toBe.Save(ctx, h, rd)
+	rd, err := restic.NewFileReader(restic.NewByteReader(buf, nil), hash[:])
+	if err != nil {
+		return err
+	}
+
+	return toBe.Save(ctx, h, rd)
 }
