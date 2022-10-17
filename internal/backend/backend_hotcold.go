@@ -31,7 +31,14 @@ func (be *HotColdBackend) isCold(h restic.Handle) bool {
 }
 
 func (be *HotColdBackend) Connections() uint {
-	return be.hot.Connections() + be.cold.Connections()
+	return min(be.cold.Connections(), be.hot.Connections())
+}
+
+func min(a, b uint) uint {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func (be *HotColdBackend) HasAtomicReplace() bool {
