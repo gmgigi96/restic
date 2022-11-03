@@ -37,7 +37,6 @@ type InitOptions struct {
 	CopyChunkerParameters bool
 	RepositoryVersion     string
 	HotOnly               bool
-	Clone                 bool
 }
 
 var initOptions InitOptions
@@ -48,7 +47,6 @@ func init() {
 	f := cmdInit.Flags()
 	initSecondaryRepoOptions(f, &initOptions.secondaryRepoOptions, "secondary", "to copy chunker parameters from")
 	f.BoolVar(&initOptions.CopyChunkerParameters, "copy-chunker-params", false, "copy chunker parameters from the secondary repository (useful with the copy command)")
-	f.BoolVar(&initOptions.Clone, "clone", false, "TODO")
 	f.StringVar(&initOptions.RepositoryVersion, "repository-version", "stable", "repository format version to use, allowed values are a format version, 'latest' and 'stable'")
 	f.BoolVar(&initOptions.HotOnly, "hot-only", false, "initialize hot repo from existing repo (if --repo-hot is given)")
 }
