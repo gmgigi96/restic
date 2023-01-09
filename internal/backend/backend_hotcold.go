@@ -116,6 +116,9 @@ func (be *HotColdBackend) Test(ctx context.Context, h restic.Handle) (exists boo
 // returns an error, the operation is aborted and the error is returned to the
 // caller.
 func (be *HotColdBackend) List(ctx context.Context, t restic.FileType, fn func(restic.FileInfo) error) error {
+	if t != restic.PackFile {
+		return be.hot.List(ctx, t, fn)
+	}
 	return be.cold.List(ctx, t, fn)
 }
 
